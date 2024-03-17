@@ -13,37 +13,15 @@ public class StudentManagement {
         try {
             conn = DriverManager.getConnection(url,user,password );
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            System.out.println(e.getMessage());
         }
     }
 //        System.out.println("Connection successful");
 
-    static Statement st;
-
-    static {
-        try {
-            st = conn.createStatement();
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public StudentManagement() throws SQLException {
-    }
 
     static Scanner sc = new Scanner(System.in);
 
 
-    private static boolean insertItem() throws SQLException {
-        System.out.print("Enter Roll no of Student : ");
-        int rn=sc.nextInt();
-        System.out.print("Enter name of Student : ");
-        String name=sc.next();
-        System.out.print("Enter marks of Student : ");
-        int marks=sc.nextInt();
-        String insertQuery = "insert into student values("+rn+", '"+name+"',"+marks+");";
-        return st.execute(insertQuery);
-    }
 
     static void displayMenu() throws SQLException {
         while (true) {
@@ -82,12 +60,31 @@ public class StudentManagement {
         }
     }
 
+    private static boolean insertItem() throws SQLException {
+        System.out.print("Enter Roll no of Student : ");
+        int rn=sc.nextInt();
+        System.out.print("Enter name of Student : ");
+        String name=sc.next();
+        System.out.print("Enter marks of Student : ");
+        int marks=sc.nextInt();
+        String insertQuery = "insert into student values(?,?,?);";
+
+        PreparedStatement ps = conn.prepareStatement(insertQuery);
+        ps.setInt(1,rn);
+        ps.setString(2,name);
+        ps.setInt(3,marks);
+
+        return ps.execute();
+    }
+
+
     private static void deleteItem() throws SQLException {
         String name = sc.next();
-        String deleteQuery = "delete from student where name = '"+name+"'";
+        String deleteQuery = "delete from student where name = '?'";
 
-        st.executeQuery(deleteQuery);
-
+        PreparedStatement ps = conn.prepareStatement(deleteQuery);
+        ps.setString(1,name);
+        ps.executeQuery();
     }
 
     private static void updateItem() {
@@ -98,6 +95,7 @@ public class StudentManagement {
     private static void readItem() throws SQLException {
         String searchQuery = "select * from student";
 
+        Statement st = conn.createStatement();
         ResultSet res = st.executeQuery(searchQuery);
 
         while (res.next()) {
@@ -108,11 +106,12 @@ public class StudentManagement {
         }
     }
 
-    public static void main(String[] args) throws ClassNotFoundException, SQLException {
-
-
-
-        displayMenu();
+    public static void main(String[] args) {
+        try {
+            displayMenu();
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
 
     }
 }
